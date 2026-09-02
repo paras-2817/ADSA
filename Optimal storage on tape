@@ -1,0 +1,50 @@
+def optimal_storage_on_tapes(program_lengths, num_tapes=1):
+    
+    indexed_programs = list(enumerate(program_lengths))
+    
+    indexed_programs.sort(key=lambda x: x[1])
+    
+    tapes_distribution = [[] for _ in range(num_tapes)]
+    
+    for rank, (orig_idx, length) in enumerate(indexed_programs):
+        tape_id = rank % num_tapes
+        tapes_distribution[tape_id].append((orig_idx, length))
+        
+    results = {}
+    total_mrt_sum = 0
+    
+    for i, tape in enumerate(tapes_distribution):
+        cumulative_time = 0
+        tape_retrieval_sum = 0
+        ordered_program_ids = []
+        for orig_idx, length in tape:
+            cumulative_time += length
+            tape_retrieval_sum += cumulative_time
+            ordered_program_ids.append(orig_idx)
+        tape_mrt = tape_retrieval_sum / len(tape) if tape else 0
+        total_mrt_sum += tape_mrt
+        results[f"Tape_{i+1}"] = {
+            "Optimal_Order_IDs": ordered_program_ids,
+            "Lengths_Sequence": [length for _, length in tape],
+            "Total_Retrieval_Time": tape_retrieval_sum,
+            "Tape_MRT": round(tape_mrt, 2)
+        }
+    results["Overall_System_MRT"] = round(total_mrt_sum / num_tapes, 2)    
+    return results
+if __name__ == "__main__":
+    programs = [5, 10, 3, 2, 8]
+    available_tapes = 2
+    
+    print(f"Initial Programs: {programs}")
+    print(f"Number of Tapes: {available_tapes}\n")
+    
+    analysis = optimal_storage_on_tapes(programs, num_tapes=available_tapes)
+    
+    for key, value in analysis.items():
+        if key != "Overall_System_MRT":
+            print(f"🎬 {key}:")
+            print(f"  • Order of Program Indices: {value['Optimal_Order_IDs']}")
+            print(f"  • Order of Lengths:         {value['Lengths_Sequence']}")
+            print(f"  • Tape MRT:                 {value['Tape_MRT']}")
+        else:
+            print(f"\n📊 Overall System MRT: {value}")
